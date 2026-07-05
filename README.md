@@ -1,7 +1,5 @@
-# Member B — Embedding & Indexing Track: B1, B2, B3
+#  Embedding & Indexing Track: B1, B2, B3
 
-Code for the three independent, start-immediately tasks from the Phase 1 Work
-Division Plan. No dependency on Member A's data is required to run any of this.
 
 ## Setup
 
@@ -68,15 +66,5 @@ similarity check) actually executes without errors, fully offline.
 - A timestamped `.json` file with the exact numbers.
 - A timestamped `.png` bar chart visualizing the same numbers.
 
-No images are otherwise produced by this pipeline — these are text-embedding
-models, not vision models, so `outputs/` only ever contains these two result
-types plus the saved model folders (`config.json`, `model.safetensors`,
-tokenizer files) written by the fine-tuning steps themselves.
 
-## Handoff to Sync Point 1
-
-When Member A delivers the verse-Tafsir pairs, replace the call to
-`load_placeholder_data()` in `b3_test_harness.py` with Member A's real data
-(same `{"anchor": ..., "positive": ...}` / `{"anchor": ..., "positive": ...,
-"negative": ...}` format) and re-run `run_finetuning()` from
 `b2_finetune_harness.py` — no other code changes needed.
