@@ -19,10 +19,10 @@ def fetch_sample_tafsir():
     if response.status_code == 200:
         data = response.json()
         tafsir_text = data.get("tafsir", {}).get("text", "")
-        print("\n✅ API Connection Successful!")
+        print("\n API Connection Successful!")
         print(f"\nSample Tafsir Text Snippet:\n{tafsir_text[:300]}...")
     else:
-        print(f"❌ Connection failed. Status code: {response.status_code}")
+        print(f" Connection failed. Status code: {response.status_code}")
 
 if __name__ == "__main__":
     fetch_sample_tafsir()

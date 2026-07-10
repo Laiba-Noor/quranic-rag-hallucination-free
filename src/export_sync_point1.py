@@ -36,7 +36,7 @@ def generate_handoff():
     
     # If it's missing, gracefully create a mock/placeholder file so the pipeline doesn't crash
     if not os.path.exists(tafsir_path):
-        print(f"⚠️ {tafsir_path} not found. Running a rapid live pull or generating empty placeholder template...")
+        print(f" {tafsir_path} not found. Running a rapid live pull or generating empty placeholder template...")
         tafsir_payload = {"tafsirs": [{"verse_key": k, "text": "Tafsir content placeholder"} for k in cleaned_verses.keys()]}
     else:
         print(f"Reading Tafsir database from: {tafsir_path}")
@@ -45,7 +45,7 @@ def generate_handoff():
         
     output_rows = []
     
-    print("\n🔄 Mapping processed text to matching Tafsir indices...")
+    print("\n Mapping processed text to matching Tafsir indices...")
     for item in tafsir_payload.get("tafsirs", []):
         v_key = item.get("verse_key")
         raw_tafsir_html = item.get("text", "")
@@ -65,7 +65,7 @@ def generate_handoff():
         writer.writeheader()
         writer.writerows(output_rows)
         
-    print(f"\n🎉 SUCCESS! Sync Point 1 handoff generated at: {output_file}")
+    print(f"\n  SUCCESS! Sync Point 1 handoff generated at: {output_file}")
     print(f"Total mapped rows ready for Member B: {len(output_rows)}")
 
 if __name__ == "__main__":

@@ -64,8 +64,8 @@ if __name__ == "__main__":
         
     try:
         processed_data = parse_tanzil_xml(xml_file_path)
-        print("\n✅ Pipeline executed successfully across Tanzil corpus!")
+        print("\n Pipeline executed successfully across Tanzil corpus!")
         print(f"Total Verses Processed: {len(processed_data)}")
         print(f"Sample Cleaned Verse (1:1): {processed_data.get('1:1')}")
     except Exception as e:
-        print(f"❌ Error encountered: {e}")
+        print(f" Error encountered: {e}")

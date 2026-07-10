@@ -26,7 +26,7 @@ def download_file(url, destination):
                 f.write(chunk)
         print(f"Saved to {destination}\n")
     else:
-        print(f"❌ Failed to download {url}. Status code: {response.status_code}")
+        print(f" Failed to download {url}. Status code: {response.status_code}")
 
 # 1. Download Tanzil Text (XML format)
 download_file(DATASETS["tanzil_uthmani"], os.path.join(RAW_DIR, "quran-uthmani.xml"))
@@ -37,4 +37,4 @@ download_file(DATASETS["qac_morphology"], os.path.join(RAW_DIR, "quranic-corpus-
 # 3. Download QRCD (Quranic Reading Comprehension Dataset)
 download_file(DATASETS["qrcd_dataset"], os.path.join(RAW_DIR, "qrcd_v1.1_train.json"))
 
-print("🎉 A1 Core downloads complete! Check your 'data/raw' directory.")
+print(" A1 Core downloads complete! Check your 'data/raw' directory.")
