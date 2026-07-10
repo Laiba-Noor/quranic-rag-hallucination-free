@@ -26,7 +26,7 @@ def build_final_index():
     
     # Robust Fallback: If A4 mapping produced 0 rows earlier, let's create them on the fly here
     if len(base_rows) == 0:
-        print("  tafsir_verse_mappings.csv was empty or missing. Generating live training matrix fallback...")
+        print("WARNING: tafsir_verse_mappings.csv was empty or missing. Generating live training matrix fallback...")
         # Fallback dictionary matching structural verse anchors
         for surah in range(1, 5):
             for ayah in range(1, 10):
@@ -60,9 +60,9 @@ def build_final_index():
         writer.writeheader()
         writer.writerows(final_output_rows)
 
-    print(f"\n TASK A5 COMPLETE!")
-    print(f" Deliverable Table Saved to: {output_file}")
-    print(f"  Rows ready for Member B fine-tuning harness: {len(final_output_rows)}")
+    print("\nTASK A5 COMPLETE!")
+    print(f"Deliverable Table Saved to: {output_file}")
+    print(f"Rows ready for Member B fine-tuning harness: {len(final_output_rows)}")
 
 if __name__ == "__main__":
     build_final_index()

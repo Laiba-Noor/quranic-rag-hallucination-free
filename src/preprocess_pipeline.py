@@ -1,71 +1,68 @@
 import os
-import re
-import unicodedata
 import xml.etree.ElementTree as ET
+import csv
 
-def clean_classical_arabic(text):
-    """
-    Standardizes orthographic forms and strips diacritics for Classical Arabic data mining.
-    """
+BASE_DIR = "quranNLP" if os.path.exists("quranNLP") else "."
+XML_PATH = os.path.join(BASE_DIR, "data", "raw", "quran-uthmani-min.xml")
+OUTPUT_DIR = os.path.join(BASE_DIR, "shared", "data")
+OUTPUT_PATH = os.path.join(OUTPUT_DIR, "tafsir_verse_mappings.csv")
+
+def clean_arabic_text(text):
     if not text:
         return ""
-        
-    # 1. Strip common boilerplate HTML tags often found in API dumps
-    text = re.sub(r'<[^>]+>', '', text)
-    
-    # 2. Apply Unicode canonical decomposition (separates letters from diacritics)
-    text = unicodedata.normalize('NFD', text)
-    
-    # 3. Explicitly strip Arabic diacritics (Tashkeel / Harakat)
-    # This range handles Fathah, Dammah, Kasrah, Sukun, Shaddah, and Quranic ornamentation glyphs
-    tashkeel_pattern = re.compile(r'[\u064B-\u0652\u0653-\u065F\u0670]')
-    text = re.sub(tashkeel_pattern, '', text)
-    
-    # 4. Standardize variations of Alif (أ, إ, آ, ٱ) into a bare Alif (ا)
-    text = re.sub(r'[إأآٱ]', 'ا', text)
-    
-    # 5. Standardize Alef Maksura (ى) into Yeh (ي)
-    text = re.sub(r'ى', 'ي', text)
-    
-    # 6. Bring back to Unicode Canonical Composition form
-    text = unicodedata.normalize('NFC', text)
-    
-    # Clear out redundant extra spaces
-    return " ".join(text.split())
+    # Remove diacritics (Tashkeel)
+    diacritics = re.compile(r'[\u064B-\u0652]')
+    text = re.sub(diacritics, '', text)
+    # Normalize Alifs
+    text = re.sub(r'[\u0622\u0623\u0625]', '\u0627', text)
+    return text.strip()
 
-def parse_tanzil_xml(xml_path):
-    """
-    Safely reads your downloaded Tanzil XML file and runs the text pipeline.
-    """
-    print(f"Processing Tanzil XML text from: {xml_path}")
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
+def preprocess_tanzil_xml():
+    if not os.path.exists(XML_PATH):
+        print(f"ERROR: XML file not found at {XML_PATH}")
+        return
+
+    print(f"Processing Tanzil XML text from: {XML_PATH}")
     
-    cleaned_corpus = {}
+    try:
+        tree = ET.parse(XML_PATH)
+        root = tree.getroot()
+    except Exception as e:
+        print(f"ERROR parsing XML file: {e}")
+        return
+
+    processed_verses = []
     
-    # Navigate standard Tanzil XML hierarchy (surah -> ayah)
-    for surah in root.findall('.//surah'):
-        surah_num = surah.get('index')
-        for ayah in surah.findall('.//ayah'):
-            ayah_num = ayah.get('index')
-            verse_key = f"{surah_num}:{ayah_num}"
-            raw_text = ayah.get('text')
+    # Iterate through sura and aya tags
+    for sura in root.findall('.//sura'):
+        sura_index = sura.get('index')
+        for aya in sura.findall('.//aya'):
+            aya_index = aya.get('index')
+            # Critical Fix: Read from the 'text' attribute instead of inner text
+            raw_text = aya.get('text')
             
-            cleaned_text = clean_classical_arabic(raw_text)
-            cleaned_corpus[verse_key] = cleaned_text
-            
-    return cleaned_corpus
+            if raw_text:
+                cleaned_text = clean_arabic_text(raw_text)
+                verse_key = f"{sura_index}:{aya_index}"
+                
+                processed_verses.append({
+                    "verse_key": verse_key,
+                    "clean_verse": cleaned_text,
+                    "tafsir_ibn_kathir": f"Tafsir text placeholder for verse {verse_key}"
+                })
+
+    # Save to destination directory
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    with open(OUTPUT_PATH, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=["verse_key", "clean_verse", "tafsir_ibn_kathir"])
+        writer.writeheader()
+        writer.writerows(processed_verses)
+
+    print("\nPipeline executed successfully across Tanzil corpus!")
+    print(f"Total Verses Processed: {len(processed_verses)}")
+    if len(processed_verses) > 0:
+        print(f"Sample Cleaned Verse (1:1): {processed_verses[0]['clean_verse']}")
 
 if __name__ == "__main__":
-    # Target directory routing 
-    xml_file_path = "quranNLP/data/raw/quran-uthmani-min.xml"
-    if not os.path.exists(xml_file_path):
-        xml_file_path = "data/raw/quran-uthmani-min.xml"
-        
-    try:
-        processed_data = parse_tanzil_xml(xml_file_path)
-        print("\n Pipeline executed successfully across Tanzil corpus!")
-        print(f"Total Verses Processed: {len(processed_data)}")
-        print(f"Sample Cleaned Verse (1:1): {processed_data.get('1:1')}")
-    except Exception as e:
-        print(f" Error encountered: {e}")
+    import re
+    preprocess_tanzil_xml()
