@@ -2,3 +2,12 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# Large model/index artifacts - regenerate by running the scripts, don't commit
+b5_real_finetuned*/
+_tiny_dry_run_*/
+index/
+gate-arabert-*/
+
+# Bulk generated data - B4/B5 outputs regenerate these; keep only curated samples in outputs/
+data/*.json

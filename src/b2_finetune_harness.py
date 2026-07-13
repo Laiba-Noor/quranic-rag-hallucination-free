@@ -48,11 +48,19 @@ class HarnessConfig:
     triplet_weight: float = 1.0
     triplet_margin: float = 0.5
     seed: int = 42
+    max_seq_length: Optional[int] = None  # e.g. 64 - caps tokenization cost per batch
+    use_fp16: bool = True  # mixed precision - roughly 2x speedup on GPU, ignored on CPU
+    dataloader_num_workers: int = 2
 
 
 def build_model(config: HarnessConfig) -> SentenceTransformer:
     """Load the base checkpoint that will be fine-tuned."""
     model = SentenceTransformer(config.base_model_name)
+    if config.max_seq_length:
+        model.max_seq_length = config.max_seq_length
+        print(f"[OK] Capped max_seq_length to {config.max_seq_length} "
+              f"(shorter sequences = faster training, and Quranic verses/tafsir "
+              f"sentences rarely need the model's full default length).")
     print(f"[OK] Base model loaded: {config.base_model_name} "
           f"(native dim = {model.get_sentence_embedding_dimension()})")
     return model
@@ -128,6 +136,9 @@ def build_trainer(
     eval_datasets: Optional[dict] = None,
 ) -> SentenceTransformerTrainer:
     """Assemble the SentenceTransformerTrainer that runs the joint hybrid objective."""
+    import torch
+    fp16_enabled = config.use_fp16 and torch.cuda.is_available()
+
     args = SentenceTransformerTrainingArguments(
         output_dir=config.output_dir,
         num_train_epochs=config.num_train_epochs,
@@ -138,7 +149,11 @@ def build_trainer(
         seed=config.seed,
         save_strategy="epoch",
         logging_steps=20,
+        fp16=fp16_enabled,
+        dataloader_num_workers=config.dataloader_num_workers,
+        dataloader_pin_memory=torch.cuda.is_available(),
     )
+    print(f"[OK] Mixed precision (fp16): {'ENABLED' if fp16_enabled else 'disabled (no GPU detected)'}")
 
     trainer = SentenceTransformerTrainer(
         model=model,

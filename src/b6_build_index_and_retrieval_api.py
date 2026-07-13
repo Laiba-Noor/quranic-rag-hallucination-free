@@ -7,5 +7,3 @@ tokenizers>=0.19.0
 pandas>=2.0.0
 hnswlib>=0.8.0
 matplotlib>=3.7.0
-requests>=2.31.0
-pyarabic>=0.6.15
