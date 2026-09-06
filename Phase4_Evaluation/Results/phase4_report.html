@@ -1,0 +1,625 @@
+<title>The Fine-Tuning Reversal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --surface:#F2F4F7; --card:#FFFFFF; --sunk:#E9EDF2;
+  --ink:#111820; --ink-2:#4E5A67; --ink-3:#7A8794;
+  --rule:#DCE3EA; --rule-soft:#E8EDF2;
+  --accent:#1668AE; --accent-soft:#E4EFF8;
+  --warn:#A5432C; --warn-soft:#F7E9E4;
+  --bar-quiet:#B7C1CC; --bar-track:#E4E9EF;
+  --shadow:0 1px 2px rgba(17,24,32,.05), 0 8px 24px -12px rgba(17,24,32,.16);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --surface:#0E141B; --card:#161E27; --sunk:#11181F;
+    --ink:#E6EBF1; --ink-2:#A2AEBB; --ink-3:#75828F;
+    --rule:#26313D; --rule-soft:#1D2630;
+    --accent:#4F9AD9; --accent-soft:#152836;
+    --warn:#D97355; --warn-soft:#2C1D18;
+    --bar-quiet:#3E4B58; --bar-track:#1B242E;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --surface:#0E141B; --card:#161E27; --sunk:#11181F;
+  --ink:#E6EBF1; --ink-2:#A2AEBB; --ink-3:#75828F;
+  --rule:#26313D; --rule-soft:#1D2630;
+  --accent:#4F9AD9; --accent-soft:#152836;
+  --warn:#D97355; --warn-soft:#2C1D18;
+  --bar-quiet:#3E4B58; --bar-track:#1B242E;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--surface); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16.5px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding:0 28px 96px}
+.col{max-width:70ch}
+
+/* ---------- masthead ---------- */
+.mast{padding:72px 0 40px; border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin:0 0 22px;
+}
+h1{
+  font-family:Newsreader,Georgia,serif; font-weight:600; font-size:clamp(2.6rem,6.4vw,4.1rem);
+  line-height:1.02; letter-spacing:-.021em; margin:0 0 22px; text-wrap:balance;
+}
+.standfirst{
+  font-family:Newsreader,Georgia,serif; font-size:clamp(1.12rem,2.1vw,1.36rem);
+  line-height:1.5; color:var(--ink-2); margin:0; max-width:60ch;
+}
+.meta{
+  display:flex; flex-wrap:wrap; gap:8px 30px; margin-top:34px;
+  font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-3);
+}
+.meta b{color:var(--ink-2); font-weight:500}
+
+/* ---------- generic blocks ---------- */
+section{padding-top:60px}
+h2{
+  font-family:Newsreader,Georgia,serif; font-weight:600;
+  font-size:clamp(1.6rem,3vw,2.1rem); line-height:1.16; letter-spacing:-.014em;
+  margin:0 0 8px; text-wrap:balance;
+}
+h3{
+  font-family:"IBM Plex Sans",sans-serif; font-weight:600; font-size:1.02rem;
+  margin:0 0 6px; letter-spacing:-.005em;
+}
+.dek{color:var(--ink-3); margin:0 0 26px; font-size:.95rem}
+p{margin:0 0 17px}
+.col p:last-child{margin-bottom:0}
+a{color:var(--accent)}
+strong{font-weight:600}
+code,.mono{font-family:"IBM Plex Mono",monospace; font-size:.88em}
+code{background:var(--sunk); padding:.12em .38em; border-radius:3px; color:var(--ink-2)}
+
+/* ---------- verdict ---------- */
+.verdict{
+  margin-top:44px; background:var(--card); border:1px solid var(--rule);
+  border-left:3px solid var(--accent); border-radius:4px;
+  padding:30px 34px; box-shadow:var(--shadow);
+}
+.verdict .eyebrow{margin-bottom:14px}
+.verdict p{max-width:66ch}
+.verdict p:last-child{margin-bottom:0}
+
+/* ---------- stat tiles ---------- */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(226px,1fr)); gap:2px;
+  background:var(--rule); border:1px solid var(--rule); border-radius:4px; overflow:hidden; margin-top:40px}
+.tile{background:var(--card); padding:26px 28px 24px}
+.tile .label{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 12px;
+}
+.tile .fig{
+  font-family:Newsreader,Georgia,serif; font-weight:500; font-size:3.05rem; line-height:.94;
+  letter-spacing:-.028em; font-variant-numeric:tabular-nums; color:var(--accent);
+}
+.tile .fig .unit{font-size:1.5rem; letter-spacing:0}
+.tile .sub{font-size:.845rem; color:var(--ink-2); margin:12px 0 0; line-height:1.45}
+
+/* ---------- chart ---------- */
+.panels{display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:34px; margin-top:8px}
+.panel{background:var(--card); border:1px solid var(--rule); border-radius:4px; padding:24px 26px 20px}
+.panel h3{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:3px}
+.panel h3 .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3); font-weight:400}
+.panel .cap{font-size:.8rem; color:var(--ink-3); margin:0 0 20px}
+.bars{display:flex; flex-direction:column; gap:11px}
+.row{display:grid; grid-template-columns:1fr; gap:5px}
+.row .name{font-size:.815rem; color:var(--ink-2); display:flex; justify-content:space-between; gap:10px}
+.row .name .v{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; color:var(--ink); font-weight:500}
+.track{background:var(--bar-track); border-radius:0 4px 4px 0; height:15px; position:relative}
+.fill{
+  height:100%; background:var(--bar-quiet); border-radius:0 4px 4px 0;
+  transition:filter .12s ease;
+}
+.row.is-best .name{color:var(--ink)}
+.row.is-best .fill{background:var(--accent)}
+.row:hover .fill{filter:brightness(1.12)}
+.axis{display:flex; justify-content:space-between; margin-top:14px; padding-top:8px;
+  border-top:1px solid var(--rule-soft); font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px; color:var(--ink-3); font-variant-numeric:tabular-nums}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto; margin-top:26px; border:1px solid var(--rule); border-radius:4px; background:var(--card)}
+table{border-collapse:collapse; width:100%; min-width:640px; font-size:.855rem}
+caption{
+  text-align:left; padding:18px 22px 4px; font-family:"IBM Plex Mono",monospace;
+  font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3);
+}
+th,td{padding:9px 14px; text-align:right; border-bottom:1px solid var(--rule-soft)}
+th:first-child,td:first-child{text-align:left; padding-left:22px}
+th:last-child,td:last-child{padding-right:22px}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:500;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  border-bottom:1px solid var(--rule);
+}
+tbody td{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; color:var(--ink-2)}
+tbody td:first-child{font-family:"IBM Plex Sans",sans-serif; color:var(--ink)}
+tbody tr:last-child td{border-bottom:none}
+tr.best td{background:var(--accent-soft)}
+tr.best td:first-child{font-weight:600; color:var(--ink); box-shadow:inset 3px 0 0 var(--accent)}
+tr.best td{color:var(--ink)}
+.sig{color:var(--warn); font-weight:500}
+.ns{color:var(--ink-3)}
+
+/* ---------- findings ---------- */
+.findings{display:flex; flex-direction:column; gap:2px; margin-top:26px;
+  background:var(--rule); border:1px solid var(--rule); border-radius:4px; overflow:hidden}
+.finding{background:var(--card); padding:24px 28px; display:grid; grid-template-columns:132px 1fr; gap:26px}
+.status{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; padding-top:3px;
+}
+.status.ok{color:var(--accent)}
+.status.neg{color:var(--warn)}
+.finding p{margin:0; font-size:.925rem; color:var(--ink-2); max-width:62ch}
+.finding p + p{margin-top:10px}
+
+/* ---------- misc ---------- */
+ul{margin:0 0 17px; padding-left:1.15em}
+li{margin-bottom:8px}
+li::marker{color:var(--ink-3)}
+.pre{
+  background:var(--card); border:1px solid var(--rule); border-radius:4px;
+  padding:18px 22px; overflow-x:auto; font-family:"IBM Plex Mono",monospace;
+  font-size:12.5px; line-height:1.62; color:var(--ink-2); margin:22px 0 0;
+}
+.pre .hl{color:var(--accent); font-weight:500}
+footer{margin-top:76px; padding-top:26px; border-top:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-3)}
+@media (max-width:620px){
+  .finding{grid-template-columns:1fr; gap:10px}
+  .mast{padding-top:52px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Phase 4 · Retrieval evaluation</p>
+  <h1>The Fine-Tuning Reversal</h1>
+  <p class="standfirst">Two benchmarks, six systems, 343 labelled questions. The off-the-shelf embedding model retrieves Qur'anic verses roughly twice as well as either model this project fine-tuned — and neither hallucination guardrail, measured for the first time, does what it was built to do. The retrieval fix has since been adopted and independently verified in the live system.</p>
+  <div class="meta">
+    <span><b>Benchmarks</b> AyaTEC · QRCD</span>
+    <span><b>Corpus</b> 6,236 verses</span>
+    <span><b>Test</b> Wilcoxon signed-rank, paired</span>
+    <span><b>Status</b> fix verified in the 22–23 Aug re-run</span>
+  </div>
+</header>
+
+<section>
+  <div class="verdict">
+    <p class="eyebrow">The recommendation</p>
+    <p><strong>Drop the fine-tuned model. Use base <span class="mono">GATE-AraBert-v1</span> over a verses-only index.</strong></p>
+    <p>It is significantly better on both benchmarks, on every metric, and it is also the simpler system — no training run, no tafsir index, no hybrid fusion layer. The improvement comes from removing work, not adding it.</p>
+  </div>
+
+  <div class="tiles">
+    <div class="tile">
+      <p class="label">Hit Rate @20 · AyaTEC</p>
+      <div class="fig">+58<span class="unit">%</span></div>
+      <p class="sub">A correct verse reaches the top 20 for 67% of questions, up from 43%.</p>
+    </div>
+    <div class="tile">
+      <p class="label">Mean reciprocal rank · AyaTEC</p>
+      <div class="fig">+161<span class="unit">%</span></div>
+      <p class="sub">0.363 vs 0.139 — the first correct verse ranks far higher.</p>
+    </div>
+    <div class="tile">
+      <p class="label">Significance · both benchmarks</p>
+      <div class="fig">p&lt;10<span class="unit">−4</span></div>
+      <p class="sub">Holds on QRCD, which shares one question with AyaTEC.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The fix was adopted — and it checks out</h2>
+  <p class="dek">Phases 1–3 were re-run on 22–23 August. This section verifies what that re-run actually used, rather than taking it on trust.</p>
+
+  <div class="col">
+    <p>The rebuilt index carries the recommendation in its own source: <em>"Base, untrained GATE-AraBert-v1 significantly outperforms both … Default model is now the base HF model, not the local fine-tuned checkpoint."</em> It holds <strong>6,236 entries, all verses, no tafsir</strong> — median passage length 55 characters, against 367 before, with the longest previously reaching 72,681 characters through a 64-token window.</p>
+    <p>To confirm the running system matched its configuration, the ten demonstration queries were re-issued against each candidate setup and the resulting similarity scores compared with those recorded in the re-run's own output files.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Reproducing the re-run's recorded similarity scores · 10 queries</caption>
+      <thead><tr><th>Configuration tested</th><th>Index size</th><th>Exact matches</th><th>Largest deviation</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Base model · verses-only index</strong></td><td>6,236</td><td><strong>8 / 10</strong></td><td>5.4 × 10<sup>−7</sup></td></tr>
+        <tr><td>v2 fine-tuned · verses + tafsir</td><td>12,472</td><td>0 / 10</td><td>0.286</td></tr>
+        <tr><td>v1 fine-tuned · verses + tafsir</td><td>12,472</td><td>0 / 10</td><td>0.347</td></tr>
+        <tr><td>Base model · verses + tafsir</td><td>12,472</td><td>0 / 10</td><td>0.358</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="findings">
+    <div class="finding">
+      <div class="status ok">Verified</div>
+      <div>
+        <h3>The live system is running the corrected configuration</h3>
+        <p>Four of the ten matches are bit-identical; the rest differ only in float32 rounding. The alternatives miss by two to six orders of magnitude more. The two non-matching queries are both explained below, and neither implicates the index.</p>
+        <p>This is stronger evidence than a changelog: the retrieval behaviour itself was reproduced, not the intention to change it.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status neg">Worth noting</div>
+      <div>
+        <h3>Confidence rose as relevance fell</h3>
+        <p>For <span class="mono">التوبة والاستغفار</span> ("repentance and seeking forgiveness"), the corrected system returns five relevant verses at similarity 0.71. The fine-tuned system returns five consecutive tafsir passages from a single surah — at 0.77.</p>
+        <p>The discarded model was <em>more</em> confident and <em>less</em> useful. Similarity score and relevance moved in opposite directions, which is the clearest single illustration of why the fine-tuning failed.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status neg">Not propagated</div>
+      <div>
+        <h3>The corrected file did not travel with the fix</h3>
+        <p>Phase 2 and Phase 3 still carry the old <span class="mono">b6_build_index_and_retrieval_api.py</span> — byte-identical to each other, still defaulting to <span class="mono">./b5_real_finetuned</span>. The runs overrode it, so the results are sound, but the archived folders would not reproduce them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>What was measured</h2>
+  <p class="dek">Hit Rate@20 — the share of questions where at least one correct verse appears in the top 20 results.</p>
+
+  <div class="panels">
+    <div class="panel">
+      <h3>AyaTEC <span class="n">174 questions</span></h3>
+      <p class="cap">Gold verses labelled by annotators.</p>
+      <div class="bars" id="p1"></div>
+      <div class="axis"><span>0</span><span>0.35</span><span>0.70</span></div>
+    </div>
+    <div class="panel">
+      <h3>QRCD <span class="n">169 questions</span></h3>
+      <p class="cap">Independent set; gold recovered from passage ranges.</p>
+      <div class="bars" id="p2"></div>
+      <div class="axis"><span>0</span><span>0.35</span><span>0.70</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Full results</h2>
+  <p class="dek">Every system indexes verses only. Higher is better throughout.</p>
+
+  <div class="tablewrap">
+    <table>
+      <caption>AyaTEC · 174 questions · ceiling Recall@10 = 0.7982</caption>
+      <thead><tr><th>System</th><th>R@10</th><th>R@20</th><th>Hit@10</th><th>Hit@20</th><th>MRR</th><th>NDCG@10</th></tr></thead>
+      <tbody>
+        <tr class="best"><td>base GATE-AraBert-v1</td><td>0.1587</td><td>0.2246</td><td>0.5690</td><td>0.6724</td><td>0.3626</td><td>0.1981</td></tr>
+        <tr><td>hybrid RRF (base + BM25)</td><td>0.1434</td><td>0.1849</td><td>0.5345</td><td>0.6207</td><td>0.2535</td><td>0.1423</td></tr>
+        <tr><td>v2 fine-tuned (+AyaTEC)</td><td>0.0884</td><td>0.1244</td><td>0.3103</td><td>0.4253</td><td>0.1388</td><td>0.0808</td></tr>
+        <tr><td>hybrid RRF (v2 + BM25)</td><td>0.0764</td><td>0.1074</td><td>0.2816</td><td>0.3966</td><td>0.1450</td><td>0.0741</td></tr>
+        <tr><td>v1 fine-tuned</td><td>0.0608</td><td>0.0974</td><td>0.2989</td><td>0.3966</td><td>0.1569</td><td>0.0735</td></tr>
+        <tr><td>BM25 lexical</td><td>0.0236</td><td>0.0312</td><td>0.1437</td><td>0.1724</td><td>0.0656</td><td>0.0295</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>QRCD · 169 questions · ceiling Recall@10 = 0.5937</caption>
+      <thead><tr><th>System</th><th>R@10</th><th>R@20</th><th>Hit@10</th><th>Hit@20</th><th>MRR</th><th>NDCG@10</th></tr></thead>
+      <tbody>
+        <tr class="best"><td>base GATE-AraBert-v1</td><td>0.0795</td><td>0.0977</td><td>0.5030</td><td>0.5799</td><td>0.3015</td><td>0.1457</td></tr>
+        <tr><td>hybrid RRF (base + BM25)</td><td>0.0809</td><td>0.1117</td><td>0.4615</td><td>0.5740</td><td>0.2951</td><td>0.1368</td></tr>
+        <tr><td>hybrid RRF (v2 + BM25)</td><td>0.0624</td><td>0.0921</td><td>0.3609</td><td>0.4734</td><td>0.2146</td><td>0.0995</td></tr>
+        <tr><td>BM25 lexical</td><td>0.0459</td><td>0.0550</td><td>0.3018</td><td>0.3964</td><td>0.1958</td><td>0.0848</td></tr>
+        <tr><td>v2 fine-tuned (+AyaTEC)</td><td>0.0588</td><td>0.0732</td><td>0.3077</td><td>0.3905</td><td>0.1939</td><td>0.0924</td></tr>
+        <tr><td>v1 fine-tuned</td><td>0.0321</td><td>0.0472</td><td>0.2426</td><td>0.2781</td><td>0.1518</td><td>0.0631</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pre">
+paired Wilcoxon, fine-tuned v2 against base
+
+  AyaTEC   Recall@10   delta −0.0703   <span class="hl">p = 9.2e−08</span>   d = −0.277
+  AyaTEC   HitRate@20  delta −0.2471   <span class="hl">p = 6.0e−08</span>   d = −0.450
+  QRCD     Recall@10   delta −0.0207   <span class="hl">p = 1.6e−04</span>   d = −0.116
+  QRCD     HitRate@20  delta −0.1893   <span class="hl">p = 1.6e−04</span>   d = −0.303
+  </div>
+</section>
+
+<section class="col">
+  <h2>Why fine-tuning hurt</h2>
+  <p>The training data was built from <strong>verse ↔ tafsir</strong> pairs — 12,358 triplets pairing each verse with Ibn Kathir's commentary on it. The deployed task is <strong>question → verse</strong>.</p>
+  <p>So the objective and the task were misaligned. The model was optimised to pull verse embeddings toward classical exegetical prose, while real queries arrive as modern Arabic questions. Two epochs of that moved the embedding space away from the geometry retrieval actually needed.</p>
+  <p>The ablation supports this reading directly: the fine-tuned models retrieve tafsir passages readily and verses poorly, which is exactly what they were trained to do.</p>
+</section>
+
+<section>
+  <h2>Supporting findings</h2>
+  <p class="dek">Each was measured on the same benchmarks with the same protocol.</p>
+
+  <div class="findings">
+    <div class="finding">
+      <div class="status neg">Negative result</div>
+      <div>
+        <h3>Indexing tafsir makes retrieval worse</h3>
+        <p>Tafsir-only retrieval scores Recall@10 of 0.0120 — near noise. Removing tafsir from the v1 index raised Recall@10 by 45%, from 0.0422 to 0.0610. Half the index was crowding out the verses that hold the answers.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status neg">Negative result</div>
+      <div>
+        <h3>Chunking the tafsir did not rescue it</h3>
+        <p>The model truncates at 64 tokens while tafsir passages run to a median of 5,298 characters, so 100% of passages exceed the window and only ~5% of each is ever seen. Splitting them into 250-character windows that fit — 250,356 index entries — made retrieval four times worse (Recall@10 0.0197, p = 8.8e−07).</p>
+        <p>Classical exegesis fragments share little vocabulary with modern questions. They act as distractors at any granularity.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status ok">Methodological</div>
+      <div>
+        <h3>Similarity score is not a relevance measure</h3>
+        <p>The project's existing diagnostic ranked systems by cosine similarity to the top result. On that measure v1 beat v2. On relevance against labelled answers, v2 beats v1 significantly. A high score against a generic chapter heading outranks a lower score against the correct verse.</p>
+        <p>This is why the quality of the pipeline could not be assessed before now.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status ok">Replicated</div>
+      <div>
+        <h3>The v2 augmentation did work — relative to v1</h3>
+        <p>Adding AyaTEC data improved on v1 significantly (Recall@10 p = 0.0074, HitRate@20 p = 2.4e−04). That effort was sound. It simply started from a damaged baseline and never closed the gap to the untrained model.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Two bugs found while verifying</h2>
+  <p class="dek">Neither was known. Both were found by trying to reproduce the re-run exactly, and both have one-line fixes.</p>
+
+  <div class="col">
+    <p>Eight of the ten queries reproduced. The two that did not turned out to be separate defects rather than noise.</p>
+  </div>
+
+  <div class="findings">
+    <div class="finding">
+      <div class="status neg">Bug · free to fix</div>
+      <div>
+        <h3>Every search has been running at hnswlib's minimum accuracy</h3>
+        <p><span class="mono">load_index()</span> never calls <span class="mono">set_ef</span>, so a freshly loaded index sits at the library default of <strong>ef = 10</strong>. That is the size of the candidate list HNSW explores; at 10 the search is approximate enough to miss the true nearest verse.</p>
+        <p>Re-issuing the failing query at <span class="mono">ef=10</span> reproduced the re-run's recorded score to 1.2 × 10<sup>−7</sup>, confirming the diagnosis. Across all 174 AyaTEC questions, <span class="mono">ef=10</span> returns the wrong nearest verse on <strong>37 of them — 21.3%</strong>. At <span class="mono">ef=256</span> that is zero.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status neg">Bug</div>
+      <div>
+        <h3>Query refinement repeats itself</h3>
+        <p>Asked about <span class="mono">العدل في الإسلام</span> ("justice in Islam"), the agent iterated three times and produced <span class="mono">العدل في الإسلام قسط انصاف قسط انصاف</span> — the same two synonyms appended twice. It re-adds expansion terms each round instead of tracking what it has already added.</p>
+        <p>Retrieval got worse as it iterated: top similarity fell from 0.51 to 0.46. The loop is currently a cost with no measured benefit.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Cost of the unset <span class="mono">ef</span> · AyaTEC, 174 questions, k=10</caption>
+      <thead><tr><th>ef</th><th>Recall@10</th><th>HitRate@10</th><th>MRR@10</th><th>Wrong top-1</th></tr></thead>
+      <tbody>
+        <tr><td><strong>10</strong> — current default</td><td>0.1336</td><td>0.4828</td><td>0.3000</td><td>21.3%</td></tr>
+        <tr><td>32</td><td>0.1512</td><td>0.5345</td><td>0.3339</td><td>6.3%</td></tr>
+        <tr><td>64</td><td>0.1559</td><td>0.5402</td><td>0.3414</td><td>3.4%</td></tr>
+        <tr><td>128</td><td>0.1576</td><td>0.5632</td><td>0.3511</td><td>0.6%</td></tr>
+        <tr><td><strong>256</strong> — recommended</td><td><strong>0.1588</strong></td><td><strong>0.5690</strong></td><td><strong>0.3569</strong></td><td>0.0%</td></tr>
+        <tr><td>512</td><td>0.1588</td><td>0.5690</td><td>0.3569</td><td>0.0%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col" style="margin-top:26px">
+    <p>Setting <span class="mono">ef=256</span> raises Recall@10 by <strong>18.9%</strong>, HitRate@10 by 17.9% and MRR by 18.9%. Metrics saturate there, so no tuning is required. It is a search-time parameter: no retraining, no reindexing, no change to stored data — a single line after <span class="mono">load_index()</span>.</p>
+    <p>Because every result in this report was produced through the same unset parameter, the reported figures understate the system's actual retrieval quality. The <em>comparisons</em> stand — all six systems were measured under identical conditions — but the absolute numbers are a floor, not a ceiling.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Does it admit when it doesn't know?</h2>
+  <p class="dek">33 AyaTEC questions are labelled <span class="mono">zero_answer</span> — the Qur'an does not answer them. Answering anyway is the hallucination this project is named after.</p>
+
+  <div class="col">
+    <p>Three conditions isolate what the guardrail contributes: plain RAG, RAG told explicitly to reply <span class="mono">INSUFFICIENT</span> when the verses don't cover the question, and that same instruction plus a refusal gate when top retrieval similarity falls below 0.62. Generation ran on <span class="mono">allam-2-7b</span>; 60 answerable questions were sampled as the control.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Abstention · 33 unanswerable + 60 answerable</caption>
+      <thead><tr><th>Measure</th><th>naive</th><th>+ instruction</th><th>+ gate @0.62</th></tr></thead>
+      <tbody>
+        <tr><td>Correctly refused the unanswerable</td><td>0.424</td><td>0.424</td><td>0.970</td></tr>
+        <tr><td>Answered anyway</td><td>0.576</td><td>0.576</td><td>0.030</td></tr>
+        <tr><td>…citing a verse never retrieved</td><td>0.000</td><td>0.091</td><td>0.000</td></tr>
+        <tr><td>Over-refused an answerable question</td><td>0.217</td><td>0.350</td><td>0.883</td></tr>
+        <tr><td>Cited a gold verse when answering</td><td>0.149</td><td>0.436</td><td>0.714</td></tr>
+        <tr><td>All citations grounded in context</td><td>0.170</td><td>0.513</td><td>0.429</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="findings">
+    <div class="finding">
+      <div class="status neg">Negative result</div>
+      <div>
+        <h3>The abstention instruction changes nothing</h3>
+        <p>Refusal on unanswerable questions is <strong>0.424 with and without it</strong> — the same 14 of 33. What the instruction did change was over-refusal, which rose from 22% to 35%. It made the system more cautious on questions it could answer, and no more cautious on the ones it couldn't.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status neg">Negative result</div>
+      <div>
+        <h3>The similarity gate is not detection</h3>
+        <p>At 0.62 it refuses 97% of unanswerable questions and <strong>92% of answerable ones</strong> — a five-point gap. It is not identifying anything; it is refusing almost everything.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status neg">Measured ceiling</div>
+      <div>
+        <h3>No threshold on retrieval score can work</h3>
+        <p>Five candidate signals were tested as answerability classifiers over all 207 questions. The best, top-1 similarity, reaches <strong>AUC 0.634</strong>; margin, count-above-threshold and top-10 spread all sit at chance. A guardrail needs roughly 0.8 to be worth shipping.</p>
+        <p>Sweeping all 25 thresholds, the best operating point is 0.411 — refusing 42.4% of unanswerable questions at 20.7% over-refusal. <strong>That is the ceiling for any rule of this shape.</strong></p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status ok">The telling coincidence</div>
+      <div>
+        <h3>The gate's best case is what the model already does</h3>
+        <p>Plain RAG, with no instruction and no gate, refused <strong>42.4%</strong> of unanswerable questions at <strong>21.7%</strong> over-refusal. The best achievable threshold gives 42.4% at 20.7%.</p>
+        <p>The two are the same point. The sufficiency gate cannot improve on the model's own implicit judgement — it can only degrade it, which at 0.62 is what it does.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col" style="margin-top:34px">
+    <h3>One caveat on the hallucination count</h3>
+    <p>The "citing a verse never retrieved" row measures <em>ungroundedness</em>, not falsehood. One flagged case cited <span class="mono">4:34</span> for a question about the treatment of wives — the correct verse, recalled from the model's own training rather than from context. A genuine failure looks different: asked where the first qibla was, the system cited eight unrelated verses including <span class="mono">12:39</span> and <span class="mono">69:43</span>.</p>
+    <p>Both are ungrounded; only the second is a hallucination in the ordinary sense. The write-up should separate them.</p>
+    <p>Some gold labels are also stricter than they look. <span class="mono">من هي ملكة سبأ؟</span> is labelled unanswerable because the Qur'an never names the Queen of Sheba — the system cited 27:23 and 27:42, which discuss her without naming her. That answer is defensible.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The other guardrail fails too</h2>
+  <p class="dek">Phase 3 ships a second, unrelated mechanism: extract triples from the answer and from the context, build graphs of both, and reject when their structural mismatch exceeds a tolerance. It was evaluated here for the first time.</p>
+
+  <div class="col">
+    <p>The 23 August run covers ten queries. Each answer was scored against a simple criterion — does every verse the answer cites actually appear in the passages that were retrieved? The guardrail's own pipeline was re-executed and reproduced its stored mismatch scores exactly, to <span class="mono">0.00e+00</span>, so what follows measures the real component and not an approximation of it.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption>Structural guardrail vs. actual citation groundedness · 9 answers with citations</caption>
+      <thead><tr><th>Tolerance</th><th>Source</th><th>Accuracy</th></tr></thead>
+      <tbody>
+        <tr><td>0.50</td><td>the value the run used, set by eye</td><td>66.7%</td></tr>
+        <tr><td>0.00</td><td>calibrated on QRCD by the new <span class="mono">f1</span>/<span class="mono">f2</span> scripts</td><td>66.7%</td></tr>
+        <tr><td>0.75</td><td>best achievable on these ten, chosen with hindsight</td><td>77.8%</td></tr>
+        <tr><td>—</td><td><strong>always answer "hallucinated"</strong></td><td><strong>66.7%</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="findings">
+    <div class="finding">
+      <div class="status neg">Negative result</div>
+      <div>
+        <h3>It verifies two answers, and one of them is wrong</h3>
+        <p>Of ten answers the guardrail passed <strong>two</strong>. One of those two cites <span class="mono">69:51</span>, <span class="mono">70:26</span> and <span class="mono">74:47</span> — none of which were retrieved. Meanwhile it rejected two answers whose citations were entirely grounded.</p>
+        <p>Rank agreement between the mismatch score and the share of ungrounded citations is <strong>+0.12</strong>, near zero. Mean mismatch is 0.705 for clean answers and 0.818 for ungrounded ones: the distributions almost entirely overlap.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status neg">Negative result</div>
+      <div>
+        <h3>Calibration does not rescue it</h3>
+        <p>The new <span class="mono">f2</span> script has a genuinely good idea behind it: build labelled examples from QRCD by pairing each gold answer with its real passage (grounded) and with an unrelated one (hallucinated), so nobody needs theological expertise to label them.</p>
+        <p>It doesn't work, and the reason matters. On 80 such examples the two classes <strong>overlap</strong> — 12 of 40 genuinely grounded pairs score the maximum mismatch of 1.0, and 3 hallucinated pairs score 0.0. The triple-extraction step simply fails on much of the Arabic. Calibration therefore lands on the degenerate tolerance 0.00, which performs exactly as well as the guessed 0.50: no better than always guessing.</p>
+      </div>
+    </div>
+    <div class="finding">
+      <div class="status neg">Inconsistency</div>
+      <div>
+        <h3>The two grounding checks disagree flatly</h3>
+        <p>On overlapping queries, Phase 2 reports <strong>9 of 10</strong> answers grounded while Phase 3 verifies <strong>2 of 10</strong>. Both cannot be right. Separately, all ten Phase 2 answers came back <strong>in English</strong> despite Arabic questions and an Arabic-only specification; Phase 3's answers are correctly in Arabic.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col" style="margin-top:34px">
+    <h3>What this does and does not license</h3>
+    <p>The obvious replacement is a direct check: every <span class="mono">[verse_key]</span> in an answer must appear in the retrieved context. It is trivial, needs no calibration, and cannot be evaded by a graph-alignment quirk.</p>
+    <p>But its apparent perfection here is definitional, not empirical — that rule <em>is</em> the criterion the guardrail was scored against, so it is right by construction and this evidence cannot be used to claim it wins. The honest statement is narrower: the structural guardrail performs no better than chance at catching ungrounded citations, so a direct check is at least as good and far simpler.</p>
+    <p>A citation check also catches only one failure mode. An answer that cites a retrieved verse but misreads it passes cleanly. Neither guardrail addresses that, and neither claims to.</p>
+  </div>
+</section>
+
+<section class="col">
+  <h2>What this does not show</h2>
+  <ul>
+    <li><strong>That fine-tuning cannot work here.</strong> Only that fine-tuning on <em>verse↔tafsir</em> pairs does not. Training on question→verse pairs is untested and is the obvious next experiment.</li>
+    <li><strong>That the system is good.</strong> Base reaches 20% of the achievable Recall@10 on AyaTEC. It is the best of six, not strong in absolute terms.</li>
+    <li><strong>That QRCD gold labels are exact.</strong> They were recovered from passage ranges, so a question's gold set spans a whole passage — a median of 18 verses. Compare systems to each other on that benchmark, not to 1.0.</li>
+    <li><strong>That abstention is settled at scale.</strong> 33 unanswerable questions is a small set, and the answerable control was sampled at 60. The direction is clear; the exact rates are not precise.</li>
+    <li><strong>That a different generator behaves the same.</strong> Only <span class="mono">allam-2-7b</span> was tested. Groq has retired every Llama model, so the generator was chosen from what remains available.</li>
+    <li><strong>That the structural guardrail is settled.</strong> It was evaluated on the ten demonstration queries, of which nine carry citations. That is enough to show it does not beat a majority baseline; it is not enough to characterise it precisely.</li>
+    <li><strong>That absolute retrieval numbers are final.</strong> Every figure here was produced at <span class="mono">ef=10</span>. Raising it lifts Recall@10 by roughly 19% across the board, so the reported values are a floor. Relative comparisons are unaffected.</li>
+  </ul>
+</section>
+
+<section class="col">
+  <h2>An operational problem, separate from the findings</h2>
+  <p>Groq withdrew <span class="mono">llama-3.3-70b-versatile</span>, which every project notebook hardcoded — <span class="mono">Phase2_Laiba_Complete_Integration</span>, <span class="mono">Phase3_Guardrail</span>, <span class="mono">Complete_Fix_Phase1_Phase3</span>, <span class="mono">generate_phase2_dashboard.py</span>. All four fail with a 404 as written.</p>
+  <p>The August re-run evidently worked around this, but <strong>no record of how survives</strong>. No model identifier appears anywhere in the Phase 2 or Phase 3 output folders; <span class="mono">d2_cot_prompting.py</span> takes the language model as an injected callable, so the choice lived in a driver notebook that was never saved to Drive. The outputs exist; the code that produced them does not.</p>
+  <p>Nobody can currently reproduce the generation results, and the person who ran them is the only remaining source for which model was used. That is worth recovering while it is still recoverable.</p>
+</section>
+
+<section class="col">
+  <h2>Next</h2>
+  <ul>
+    <li><strong>Set <span class="mono">ef=256</span> after loading the index.</strong> One line, no retraining, ~19% on every retrieval metric. Nothing else on this list is close to that ratio of benefit to effort.</li>
+    <li><strong>Propagate the corrected <span class="mono">b6</span></strong> into Phase 2 and Phase 3, and record the generator's model identifier in version control. Both folders currently default to the discarded fine-tuned model.</li>
+    <li><strong>Replace the structural guardrail with a direct citation check</strong> — every cited verse must appear in the retrieved context — and drop the mismatch tolerance rather than calibrating it further.</li>
+    <li><strong>Fine-tune on question→verse pairs</strong> using QRCD's train split, evaluating on QRCD test and AyaTEC. This tests the misalignment mechanism directly and remains the strongest open experiment.</li>
+    <li><strong>Replace the answerability signal.</strong> Retrieval score is exhausted at AUC 0.634. Worth testing: a dedicated LLM sufficiency call, a classifier over retrieved passages, and agreement between two independent retrievers.</li>
+    <li><strong>Turn the ten-query demonstrations into evaluations.</strong> Both guardrail conclusions currently rest on nine usable answers. The retrieval work already runs at 174 questions; the generation side should match it.</li>
+    <li><strong>Fix query refinement or remove it.</strong> It duplicates its own expansion terms and made retrieval worse on the one query where it engaged.</li>
+  </ul>
+</section>
+
+<footer>
+  Reproduction · notebooks 5–9 in <span class="mono">Research/Colab_Cells/</span> · results written to <span class="mono">MyDrive/Phase4_Project/</span> · corpus <span class="mono">final_cross_reference_index.csv</span> · code <span class="mono">github.com/Laiba-Noor/quranic-rag-hallucination-free</span>
+</footer>
+
+</div>
+
+<script>
+const DATA = {
+  p1: [
+    ["base GATE-AraBert-v1", 0.6724, true],
+    ["hybrid RRF (base + BM25)", 0.6207, false],
+    ["v2 fine-tuned (+AyaTEC)", 0.4253, false],
+    ["hybrid RRF (v2 + BM25)", 0.3966, false],
+    ["v1 fine-tuned", 0.3966, false],
+    ["BM25 lexical", 0.1724, false]
+  ],
+  p2: [
+    ["base GATE-AraBert-v1", 0.5799, true],
+    ["hybrid RRF (base + BM25)", 0.5740, false],
+    ["hybrid RRF (v2 + BM25)", 0.4734, false],
+    ["BM25 lexical", 0.3964, false],
+    ["v2 fine-tuned (+AyaTEC)", 0.3905, false],
+    ["v1 fine-tuned", 0.2781, false]
+  ]
+};
+const MAX = 0.70;
+for (const [id, rows] of Object.entries(DATA)) {
+  const host = document.getElementById(id);
+  for (const [name, val, best] of rows) {
+    const row = document.createElement("div");
+    row.className = "row" + (best ? " is-best" : "");
+    row.innerHTML =
+      '<div class="name"><span>' + name + '</span><span class="v">' + val.toFixed(4) + '</span></div>' +
+      '<div class="track"><div class="fill" style="width:' +
+      (val / MAX * 100).toFixed(2) + '%"></div></div>';
+    row.title = name + " — HitRate@20 " + val.toFixed(4);
+    host.appendChild(row);
+  }
+}
+</script>
